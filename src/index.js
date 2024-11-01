@@ -1,11 +1,46 @@
 function refreshWeather(response) {
-  // Correct the selector to use the ID
+  // Select elements
   let temperatureElement = document.querySelector("#temperature");
-  let temperature = response.data.temperature.current;
   let cityElement = document.querySelector("#city");
+  let descriptionElement = document.querySelector("#description");
+  let humidityElement = document.querySelector("#humidity");
+  let windspeedElement = document.querySelector("#wind-speed");
+  let timeElement = document.querySelector("#time");
+
+  // Convert Unix timestamp to Date object
+  let date = new Date(response.data.time * 1000);
+
+
+
+  // Set innerHTML of elements with weather data
   cityElement.innerHTML = response.data.city;
-  // Update the temperature in the HTML
-  temperatureElement.innerHTML = Math.round(temperature);
+  timeElement.innerHTML = formatDate(date);
+  descriptionElement.innerHTML = response.data.condition.description;
+  humidityElement.innerHTML = `${response.data.temperature.humidity}%`;
+  windspeedElement.innerHTML = `${response.data.wind.speed} km/h`;
+  temperatureElement.innerHTML = Math.round(response.data.temperature.current);
+}
+
+function formatDate(date) {
+  // Correctly use the parameter name 'date'
+  let minutes = date.getMinutes().toString().padStart(2, "0"); // Ensure two digits for minutes
+  let hours = date.getHours();
+  let days = [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+  ];
+  let day = days[date.getDay()];
+
+  if (minutes < 10) {
+    minutes = `0${minutes}`;
+  }
+
+  return `${day} ${hours}:${minutes}`;
 }
 
 function searchCity(city) {
@@ -19,7 +54,7 @@ function searchCity(city) {
 function handleSearchSubmit(event) {
   event.preventDefault();
   let searchInput = document.querySelector("#search-form-input");
-  
+
   searchCity(searchInput.value);
 }
 
@@ -27,4 +62,5 @@ function handleSearchSubmit(event) {
 let searchFormElement = document.querySelector("#search-form");
 searchFormElement.addEventListener("submit", handleSearchSubmit);
 
-searchCity("pretoria")
+// Call the search function initially with a default city
+searchCity("pretoria");
