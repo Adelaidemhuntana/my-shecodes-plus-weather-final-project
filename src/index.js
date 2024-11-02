@@ -23,6 +23,9 @@ document.addEventListener("DOMContentLoaded", function () {
       response.data.temperature.current
     )}°C`;
     iconElement.innerHTML = `<img src="${response.data.condition.icon_url}" class="weather-app-icon"/>`;
+
+    // Get forecast for the same city
+    getForecast(response.data.city);
   }
 
   // Function to format the date
@@ -48,39 +51,63 @@ document.addEventListener("DOMContentLoaded", function () {
     let apiKey = "d7bft2a2ecbd3c41d91cf26o4a04c0b3";
     let apiUrl = `https://api.shecodes.io/weather/v1/current?query=${city}&key=${apiKey}&units=metric`;
 
-    // Make the API call with axios and call refreshWeather when it completes
-    axios.get(apiUrl).then(refreshWeather);
+    // Make the API call with axios
+    axios.get(apiUrl).then((response) => {
+      refreshWeather(response); // Update weather info
+    });
   }
 
   // Function to handle search form submission
   function handleSearchSubmit(event) {
     event.preventDefault();
     let searchInput = document.querySelector("#search-form-input");
-    searchCity(searchInput.value);
+    searchCity(searchInput.value); // Fetch weather data for the input city
   }
 
-  // Function to display a simple forecast
-  function displayforecast() {
-    let days = ["Tue", "Wed", "Thu", "Fri", "Sat"];
+  // Function to format the day for the forecast
+  function formatDay(timestamp) {
+    let date = new Date(timestamp * 1000);
+    let days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    return days[date.getDay()];
+  }
+
+  // Function to get the forecast for the specified city
+  function getForecast(city) {
+    let apiKey = "d7bft2a2ecbd3c41d91cf26o4a04c0b3";
+    let apiUrl = `https://api.shecodes.io/weather/v1/forecast?query=${city}&key=${apiKey}&units=metric`;
+
+    axios.get(apiUrl).then(displayForecast);
+  }
+
+  // Function to display the forecast
+  function displayForecast(response) {
+    console.log(response.data);
+
     let forecastHtml = "";
 
-    days.forEach(function (day) {
-      forecastHtml += `
-        <div class="weather-forecast-day">
-          <div class="weather-forecast-date">${day}</div>
-          <div class="weather-forecast-icon">🌤️</div>
-          <div class="weather-forecast-temperatures">
-            <div class="weather-forecast-temperature">
-            <strong>15°</strong>
+    response.data.daily.forEach(function (day, index) {
+      if (index < 5) {
+        forecastHtml += `
+          <div class="weather-forecast-day">
+            <div class="weather-forecast-date">${formatDay(day.time)}</div>
+            <img src="${
+              day.condition.icon_url
+            }" class="weather-forecast-icon" />
+            <div class="weather-forecast-temperatures">
+              <div class="weather-forecast-temperature">
+                <strong>${Math.round(day.temperature.maximum)}°</strong>
+              </div>
+              <div class="weather-forecast-temperature">${Math.round(
+                day.temperature.minimum
+              )}°</div>
             </div>
-            <div class="weather-forecast-temperature">9°</div>
           </div>
-        </div>
-      `;
+        `;
+      }
     });
 
-    let forecastElement = document.querySelector("#forecast"); // Define the variable here
-    forecastElement.innerHTML = forecastHtml; // Use forecastElement
+    let forecastElement = document.querySelector("#forecast");
+    forecastElement.innerHTML = forecastHtml;
   }
 
   // Add the event listener to the form
@@ -89,5 +116,4 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Call the search function initially with a default city
   searchCity("pretoria");
-  displayforecast(); // Display initial forecast
 });
